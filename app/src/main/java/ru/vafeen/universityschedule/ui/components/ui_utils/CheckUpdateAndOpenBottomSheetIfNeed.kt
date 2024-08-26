@@ -34,7 +34,6 @@ fun CheckUpdateAndOpenBottomSheetIfNeed(
     LaunchedEffect(key1 = null) {
         release = networkRepository.getLatestRelease()?.body()
         if (release != null && versionName != null &&
-            release?.tag_name?.substringAfter("v") != null &&
             release?.tag_name?.substringAfter("v") != versionName
         )
             isUpdateNeeded = true
