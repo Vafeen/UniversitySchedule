@@ -2,78 +2,87 @@
 
 ![Icon](icons/icon.png)
 
-An application that will allow you to always know the actual schedule by link on Google Sheets.
+Simple scheduler application.
 
-# Application
+Works by creating a connection between *Google Sheets* and the *App* itself.
 
-Supporting languages: English, Russian
+## Features 
 
-Supporting themes: Dark, Light
+Supported languages: English, Russian
 
-Main screen:
+Supported themes: Dark, Light
 
-- Actual lessons for the current week and current lesson today
-- Lessons with other frequencies
-- If you’ve chosen a subgroup in Settings Screen, this screen shows you only lessons for the chosen subgroup; otherwise, for all subgroups
+### Main screen:
+
+- Shows you all of the classes for each day
+- Indicates what class is going on right now and what will be the next one
+- If you’ve chosen a subgroup in *settings*, it will show you only this subgroup's classes; otherwise — all classes
 
 <p>
 <img src="readmemedia/nextlesson.png" alt="Icon" width="210">
 <img src="readmemedia/currentlesson.png" alt="Icon" width="210">
 </p>
-Settings screen:
 
-_General_
+### Settings screen:
 
-- Set link to table with schedule
-- View table in browser/GSheets app
+#### General
+
+- Link your schedule with Google Sheets
+- Open your spreadsheet in browser or Google Sheets App
 - Change interface color by ColorPicker
-- Choose subgroup (If not selected - will be selected, if selected - will be canceled)
+- Choose subgroup  
 
-_Contacts_
+#### Contacts
 
-- Community of application in VK
+- Community in VK.com
 - Code on GitHub
 
 <img src="readmemedia/settingsscreen.png" alt="Icon" width="210">
 
-_Color picker_
+#### Color picker
 
 - You can change the main color separately in Dark and Light themes.
 
 <img src="readmemedia/colorpicker.png" alt="Icon" width="210">
 
-_Subgroup_
+#### Subgroup
 
 <p>
     <img src="readmemedia/subgroup.png" alt="Icon" width="210">
     <img src="readmemedia/chosensubgroup.png" alt="Icon" width="210">
 </p>
 
-# Table in Google Sheets
 
-Required fields: A (day of week), C (start time), D (end time). But how without B (name)?
+## Google Sheets integration
+Your spreadsheet should contain 8 columns(from A to H)
 
-Lessons with undefined these columns will be skipped!!
+Fields:
+- **A — day of the week**
+- B — subject name
+- **C — starting time**
+- **D — ending time**
+- E — classroom
+- F — teacher
+- G — subgroup
+- H — frequency
 
-Lessons with undefined following columns won’t be skipped:
+Fields A,C,D are *required*, don't leave them undefined 
 
-when {
+- if column E (classroom) is undefined -> it won’t be shown
+- if column F (teacher) is undefined -> it won’t be shown
+- if column G (subgroup) is undefined -> this class will be shown for all subgroups
+- if column H (frequency) is undefined -> this class will show up every week
 
-- column E (classroom) not defined -> won’t be shown for this lesson
-- column F (name of teacher) not defined -> won’t be shown for this lesson
-- column G (subgroup) not defined -> lesson for all subgroups
-- column H (frequency) not defined -> lesson every week
-
-}
-
+**Example:**
 ![table](readmemedia/table.png)
 
-To get data in mobile app:
+## Usage
 
-1. Open public access
-2. Copy the link to the table
-3. Paste in the app: Settings screen -> Link to table
+How to link your schedule to the App:
+1. Your spreadsheet should have general access set to **anyone with the link**
+2. Copy spreadsheet's link
+3. Paste in App's *settings* menu
+   
+## Download
 
-# Download
-
-[releases](https://github.com/vafeen/UniversitySchedule/releases)
+[You can find latest release here](https://github.com/vafeen/UniversitySchedule/releases)
