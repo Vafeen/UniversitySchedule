@@ -144,7 +144,7 @@ fun MainScreen(
     val pagerState = rememberPagerState(
         pageCount = {
             pageNumber
-        }, initialPage = localDate.dayOfWeek.value - 1
+        }, initialPage = 0
     )
     LaunchedEffect(key1 = null) {
         withContext(Dispatchers.Main) {
