@@ -127,7 +127,7 @@ fun MainScreen(
     var lessons by remember {
         mutableStateOf(listOf<Lesson>())
     }
-    var cardsWithDateState = rememberLazyListState()
+    val cardsWithDateState = rememberLazyListState()
 
     fun changeDateAndFrequency(daysAfterTodayDate: Long) {
         localDate = viewModel.todayDate.plusDays(daysAfterTodayDate)
@@ -251,7 +251,7 @@ fun MainScreen(
             ) {
                 HorizontalPager(
                     state = pagerState, modifier = Modifier.weight(10f)
-                ) { page ->
+                ) { _ ->
                     if (!pagerState.isScrollInProgress) LaunchedEffect(key1 = null) {
                         cardsWithDateState.animateScrollToItem(pagerState.currentPage)
                     }
@@ -262,10 +262,14 @@ fun MainScreen(
                             .verticalScroll(rememberScrollState())
                     ) {
                         val lessonsOfThisDay = lessons.filter {
-                            it.dayOfWeek == viewModel.daysOfWeek[page % 7] && (it.frequency == null || it.frequency == viewModel.weekOfYear) && (it.subGroup == settings.subgroup || settings.subgroup == null || it.subGroup == null)
-                            }
+                            it.dayOfWeek == localDate.dayOfWeek &&
+                                    (it.frequency == null || it.frequency == weekOfYear) &&
+                                    (it.subGroup == settings.subgroup || settings.subgroup == null || it.subGroup == null)
+                        }
                         val lessonsInOppositeNumAndDenDay = lessons.filter {
-                            it.dayOfWeek == viewModel.daysOfWeek[page % 7] && it.frequency == viewModel.weekOfYear.getOpposite() && (it.subGroup == settings.subgroup || settings.subgroup == null || it.subGroup == null)
+                            it.dayOfWeek == localDate.dayOfWeek &&
+                                    it.frequency == weekOfYear.getOpposite() &&
+                                    (it.subGroup == settings.subgroup || settings.subgroup == null || it.subGroup == null)
                         }
                         if (lessonsOfThisDay.isNotEmpty()) {
                             viewModel.nowIsLesson = false
@@ -287,11 +291,11 @@ fun MainScreen(
                                 } else lesson.StringForSchedule(colorBack = ScheduleTheme.colors.buttonColor)
                             }
                         } else WeekDay(context = context, modifier = Modifier.let {
-                                var modifier = Modifier.padding(vertical = 75.dp)
+                            var modifier = Modifier.padding(vertical = 75.dp)
                             if (lessonsInOppositeNumAndDenDay.isEmpty()) modifier =
                                 Modifier.weight(1f)
-                                modifier
-                            })
+                            modifier
+                        })
 
                         if (lessonsInOppositeNumAndDenDay.isNotEmpty()) {
                             Spacer(
