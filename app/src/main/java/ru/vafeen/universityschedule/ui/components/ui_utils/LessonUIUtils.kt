@@ -117,7 +117,7 @@ fun Lesson.StringForSchedule(
             if (subGroup?.isNotEmpty() == true)
                 Row(
                     modifier = Modifier
-                        .weight(1f),
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Icon(
