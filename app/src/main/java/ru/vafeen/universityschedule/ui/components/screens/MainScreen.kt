@@ -1,5 +1,7 @@
 package ru.vafeen.universityschedule.ui.components.screens
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -146,6 +148,20 @@ fun MainScreen(
             pageNumber
         }, initialPage = 0
     )
+    BackHandler {
+        when {
+            pagerState.currentPage == 0 -> {
+                navController.popBackStack()
+                (context as Activity).finish()
+            }
+
+            else -> {
+                cor.launch(Dispatchers.Main) {
+                    pagerState.animateScrollToPage(0)
+                }
+            }
+        }
+    }
     LaunchedEffect(key1 = null) {
         withContext(Dispatchers.Main) {
             while (true) {
@@ -222,7 +238,6 @@ fun MainScreen(
                         .clickable {
                             cor.launch(Dispatchers.Main) {
                                 pagerState.animateScrollToPage(index)
-                                changeDateAndFrequency(daysAfterTodayDate = index.toLong())
                             }
                         }
                         .alpha(
