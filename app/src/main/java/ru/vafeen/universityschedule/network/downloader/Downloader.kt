@@ -64,55 +64,45 @@ object Downloader {
                 call: Call<ResponseBody>,
                 response: Response<ResponseBody>
             ) {
-                // Запускаем корутину для выполнения операции ввода-вывода
                 CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
                     try {
+                        val body = response.body()
                         // Проверяем, успешен ли ответ
-                        if (response.isSuccessful) {
-                            response.body()?.let { body ->
-                                // Создаем файл для записи данных
-                                val file = File(filePath)
-                                // Получаем поток данных из тела ответа
-                                val inputStream = body.byteStream()
-                                // Создаем поток для записи данных в файл
-                                val outputStream = FileOutputStream(file)
-                                // Буфер для чтения данных
-                                val buffer = ByteArray(8 * 1024)
-                                var bytesRead: Int
-                                var totalBytesRead: Long = 0
-                                // Получаем длину содержимого
-                                val contentLength = body.contentLength()
+                        if (response.isSuccessful && body != null) {
+                            // Создаем файл для записи данных
+                            val file = File(filePath)
+                            // Получаем поток данных из тела ответа
+                            val inputStream = body.byteStream()
+                            // Создаем поток для записи данных в файл
+                            val outputStream = FileOutputStream(file)
+                            // Буфер для чтения данных
+                            val buffer = ByteArray(8 * 1024)
+                            var bytesRead: Int
+                            var totalBytesRead: Long = 0
+                            // Получаем длину содержимого
+                            val contentLength = body.contentLength()
 
-                                // Используем потоки для чтения и записи данных
-                                inputStream.use { input ->
-                                    outputStream.use { output ->
-                                        while (input.read(buffer).also { bytesRead = it } != -1) {
-                                            // запись данных из буфера в выходной поток
-                                            output.write(buffer, 0, bytesRead)
-                                            totalBytesRead += bytesRead
-                                            // Отправляем прогресс загрузки
-                                            sizeFlow.emit(
-                                                Progress(
-                                                    totalBytesRead = totalBytesRead,
-                                                    contentLength = contentLength,
-                                                    done = totalBytesRead == contentLength
-                                                )
-                                            )
-                                        }
-                                    }
-                                }
-                                // Логируем успешную загрузку
-                                Log.d("status", "Downloaded")
+                            // Используем потоки для чтения и записи данных
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                // запись данных из буфера в выходной поток
+                                outputStream.write(buffer, 0, bytesRead)
+                                totalBytesRead += bytesRead
+                                // Отправляем прогресс загрузки
+                                sizeFlow.emit(
+                                    Progress(
+                                        totalBytesRead = totalBytesRead,
+                                        contentLength = contentLength,
+                                        done = totalBytesRead == contentLength
+                                    )
+                                )
                             }
                         } else {
-                            // Логируем ошибку при неуспешном ответе
-                            Log.e("status", "Failed to download file")
+                            //  Отправляем сигнал о неудаче
+                            sizeFlow.emit(Progress(failed = true))
                         }
                     } catch (e: Exception) {
                         // Обрабатываем исключение и отправляем сигнал о неудаче
-                        CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
-                            sizeFlow.emit(Progress(failed = true))
-                        }
+                        sizeFlow.emit(Progress(failed = true))
                     }
                 }
             }
