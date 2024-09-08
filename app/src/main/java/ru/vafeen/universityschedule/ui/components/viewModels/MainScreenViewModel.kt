@@ -14,7 +14,7 @@ import ru.vafeen.universityschedule.database.entity.Lesson
 import ru.vafeen.universityschedule.network.service.GSheetsService
 import ru.vafeen.universityschedule.utils.GSheetsServiceRequestStatus
 import ru.vafeen.universityschedule.utils.SharedPreferences
-import ru.vafeen.universityschedule.utils.changeFrequencyIfOtherIsDefinedInSettings
+import ru.vafeen.universityschedule.utils.changeFrequencyIfDefinedInSettings
 import ru.vafeen.universityschedule.utils.createGSheetsService
 import ru.vafeen.universityschedule.utils.getFrequencyByLocalDate
 import ru.vafeen.universityschedule.utils.getLessonsListFromGSheetsTable
@@ -45,7 +45,7 @@ class MainScreenViewModel @Inject constructor(
     val todayDate: LocalDate = LocalDate.now()
     val daysOfWeek = DayOfWeek.entries.toList()
     val weekOfYear = todayDate.getFrequencyByLocalDate()
-        .changeFrequencyIfOtherIsDefinedInSettings(settings = settings)
+        .changeFrequencyIfDefinedInSettings(settings = settings)
     var nowIsLesson: Boolean = false
     private var gSheetsService: GSheetsService? =
         settings.link?.let { createGSheetsService(link = it) }

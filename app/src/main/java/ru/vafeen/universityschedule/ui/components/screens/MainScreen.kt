@@ -1,10 +1,8 @@
 package ru.vafeen.universityschedule.ui.components.screens
 
 import android.app.Activity
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,6 +22,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -69,12 +69,11 @@ import ru.vafeen.universityschedule.ui.theme.FontSize
 import ru.vafeen.universityschedule.ui.theme.ScheduleTheme
 import ru.vafeen.universityschedule.utils.GSheetsServiceRequestStatus
 import ru.vafeen.universityschedule.utils.Path
-import ru.vafeen.universityschedule.utils.changeFrequencyIfOtherIsDefinedInSettings
+import ru.vafeen.universityschedule.utils.changeFrequencyIfDefinedInSettings
 import ru.vafeen.universityschedule.utils.getDateString
 import ru.vafeen.universityschedule.utils.getFrequencyByLocalDate
 import ru.vafeen.universityschedule.utils.getIconByRequestStatus
 import ru.vafeen.universityschedule.utils.getMainColorForThisTheme
-import ru.vafeen.universityschedule.utils.getSettingsOrCreateIfNull
 import ru.vafeen.universityschedule.utils.getTimeStringAsHMS
 import ru.vafeen.universityschedule.utils.nowIsLesson
 import ru.vafeen.universityschedule.utils.save
@@ -82,7 +81,7 @@ import ru.vafeen.universityschedule.utils.suitableColor
 import java.time.LocalDate
 import java.time.LocalTime
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavController, viewModel: MainScreenViewModel
@@ -94,10 +93,9 @@ fun MainScreen(
         mutableStateOf(Progress(totalBytesRead = 0L, contentLength = 0L, done = false))
     }
     val dark = isSystemInDarkTheme()
-    val settings by remember { mutableStateOf(viewModel.sharedPreferences.getSettingsOrCreateIfNull()) }
     val mainColor by remember {
         mutableStateOf(
-            settings.getMainColorForThisTheme(isDark = dark) ?: defaultColor
+            viewModel.settings.getMainColorForThisTheme(isDark = dark) ?: defaultColor
         )
     }
     var isFrequencyInChanging by remember {
@@ -114,10 +112,7 @@ fun MainScreen(
         mutableStateOf(LocalDate.now())
     }
     var weekOfYear by remember {
-        mutableStateOf(viewModel.weekOfYear).let {
-            Log.d("freq", "${it.value}")
-            it
-        }
+        mutableStateOf(viewModel.weekOfYear)
     }
     LaunchedEffect(key1 = null) {
         Downloader.isUpdateInProcessFlow.collect {
@@ -145,10 +140,19 @@ fun MainScreen(
     }
     val cardsWithDateState = rememberLazyListState()
 
-    fun changeDateAndFrequency(daysAfterTodayDate: Long) {
-        localDate = viewModel.todayDate.plusDays(daysAfterTodayDate)
+
+    fun chooseTypeOfDefinitionFrequencyDependsOn(selectedFrequency: Frequency?) {
+        viewModel.settings =
+            viewModel.settings
+                .copy(
+                    isSelectedFrequencyCorrespondsToTheWeekNumbers = selectedFrequency?.let {
+                        localDate.getFrequencyByLocalDate() == it
+                    }
+                )
+                .save(sharedPreferences = viewModel.sharedPreferences)
         weekOfYear = localDate.getFrequencyByLocalDate()
-            .changeFrequencyIfOtherIsDefinedInSettings(settings = viewModel.settings)
+            .changeFrequencyIfDefinedInSettings(settings = viewModel.settings)
+        isFrequencyInChanging = false
     }
     LaunchedEffect(key1 = null) {
         viewModel.updateLocalDatabase { newLessons, problem ->
@@ -233,20 +237,23 @@ fun MainScreen(
                         onDismissRequest = { isFrequencyInChanging = false }) {
                         DropdownMenuItem(
                             text = {
-                                TextForThisTheme(
-                                    text = stringResource(id = Frequency.Numerator.resourceName),
-                                    fontSize = FontSize.medium19
-                                )
+                                Row {
+                                    TextForThisTheme(
+                                        text = stringResource(id = Frequency.Numerator.resourceName),
+                                        fontSize = FontSize.medium19
+                                    )
+                                    if (
+                                        viewModel.settings.isSelectedFrequencyCorrespondsToTheWeekNumbers != null &&
+                                        weekOfYear == Frequency.Numerator
+                                    )
+                                        Icon(
+                                            imageVector = Icons.Default.Done,
+                                            contentDescription = "This is selected or not"
+                                        )
+                                }
                             },
                             onClick = {
-                                viewModel.settings =
-                                    viewModel.settings
-                                        .copy(
-                                            isSelectedFrequencyCorrespondsToTheWeekNumbers =
-                                            viewModel.todayDate.getFrequencyByLocalDate() == Frequency.Numerator
-                                        )
-                                        .save(sharedPreferences = viewModel.sharedPreferences)
-                                isFrequencyInChanging = false
+                                chooseTypeOfDefinitionFrequencyDependsOn(selectedFrequency = Frequency.Numerator)
                             })
 
                         Spacer(
@@ -258,40 +265,51 @@ fun MainScreen(
 
                         DropdownMenuItem(
                             text = {
-                                TextForThisTheme(
-                                    text = stringResource(id = Frequency.Denominator.resourceName),
-                                    fontSize = FontSize.medium19
-                                )
+                                Row {
+                                    TextForThisTheme(
+                                        text = stringResource(id = Frequency.Denominator.resourceName),
+                                        fontSize = FontSize.medium19
+                                    )
+                                    if (
+                                        viewModel.settings.isSelectedFrequencyCorrespondsToTheWeekNumbers != null &&
+                                        weekOfYear == Frequency.Denominator
+                                    )
+                                        Icon(
+                                            imageVector = Icons.Default.Done,
+                                            contentDescription = "This is selected or not"
+                                        )
+                                }
+
                             },
                             onClick = {
-                                viewModel.settings =
-                                    viewModel.settings
-                                        .copy(
-                                            isSelectedFrequencyCorrespondsToTheWeekNumbers =
-                                            viewModel.todayDate.getFrequencyByLocalDate() == Frequency.Denominator
-                                        )
-                                        .save(sharedPreferences = viewModel.sharedPreferences)
-                                isFrequencyInChanging = false
+                                chooseTypeOfDefinitionFrequencyDependsOn(selectedFrequency = Frequency.Denominator)
                             })
+
                         Spacer(
                             modifier = Modifier
                                 .height(2.dp)
                                 .padding(horizontal = 15.dp)
                                 .background(color = ScheduleTheme.colors.oppositeTheme),
                         )
+
                         DropdownMenuItem(
                             text = {
-                                TextForThisTheme(
-                                    text = stringResource(id = R.string.auto),
-                                    fontSize = FontSize.medium19
-                                )
+                                Row {
+                                    TextForThisTheme(
+                                        text = stringResource(id = R.string.auto),
+                                        fontSize = FontSize.medium19
+                                    )
+                                    if (
+                                        viewModel.settings.isSelectedFrequencyCorrespondsToTheWeekNumbers == null
+                                    )
+                                        Icon(
+                                            imageVector = Icons.Default.Done,
+                                            contentDescription = "This is selected or not"
+                                        )
+                                }
                             },
                             onClick = {
-                                viewModel.settings =
-                                    viewModel.settings
-                                        .copy(isSelectedFrequencyCorrespondsToTheWeekNumbers = null)
-                                        .save(sharedPreferences = viewModel.sharedPreferences)
-                                isFrequencyInChanging = false
+                                chooseTypeOfDefinitionFrequencyDependsOn(selectedFrequency = null)
                             })
                     }
                 }
@@ -361,35 +379,34 @@ fun MainScreen(
                 HorizontalPager(
                     state = pagerState, modifier = Modifier.weight(10f)
                 ) { page ->
-                    val thisDate = viewModel.todayDate.plusDays(page.toLong())
-                    val thisWeekOfYear = thisDate.getFrequencyByLocalDate()
-                        .changeFrequencyIfOtherIsDefinedInSettings(settings = settings)
                     if (!pagerState.isScrollInProgress) LaunchedEffect(key1 = null) {
                         cardsWithDateState.animateScrollToItem(pagerState.currentPage)
                     }
-                    changeDateAndFrequency(daysAfterTodayDate = pagerState.currentPage.toLong())
+                    localDate = viewModel.todayDate.plusDays(pagerState.currentPage.toLong())
+                    weekOfYear = localDate.getFrequencyByLocalDate()
+                        .changeFrequencyIfDefinedInSettings(settings = viewModel.settings)
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
                         val lessonsOfThisDay = lessons.filter {
-                            it.dayOfWeek == thisDate.dayOfWeek &&
-                                    (it.frequency == null || it.frequency == thisWeekOfYear) &&
-                                    (it.subGroup == settings.subgroup || settings.subgroup == null || it.subGroup == null)
+                            it.dayOfWeek == localDate.dayOfWeek &&
+                                    (it.frequency == null || it.frequency == weekOfYear) &&
+                                    (it.subGroup == viewModel.settings.subgroup || viewModel.settings.subgroup == null || it.subGroup == null)
                         }
                         val lessonsInOppositeNumAndDenDay = lessons.filter {
-                            it.dayOfWeek == thisDate.dayOfWeek &&
-                                    it.frequency == thisWeekOfYear.getOpposite() &&
-                                    (it.subGroup == settings.subgroup || settings.subgroup == null || it.subGroup == null)
+                            it.dayOfWeek == localDate.dayOfWeek &&
+                                    it.frequency == weekOfYear.getOpposite() &&
+                                    (it.subGroup == viewModel.settings.subgroup || viewModel.settings.subgroup == null || it.subGroup == null)
                         }
                         if (lessonsOfThisDay.isNotEmpty()) {
                             viewModel.nowIsLesson = false
                             lessonsOfThisDay.forEach { lesson ->
-                                if (lesson.nowIsLesson(localTime) && viewModel.todayDate == thisDate) {
+                                if (lesson.nowIsLesson(localTime) && viewModel.todayDate == localDate) {
                                     viewModel.nowIsLesson = true
                                     lesson.StringForSchedule(colorBack = mainColor)
-                                } else if (viewModel.todayDate == thisDate && lessonsOfThisDay.any {
+                                } else if (viewModel.todayDate == localDate && lessonsOfThisDay.any {
                                         it.startTime > localTime
                                     } && lesson == lessonsOfThisDay.filter {
                                         it.startTime > localTime

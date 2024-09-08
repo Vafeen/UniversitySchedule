@@ -4,7 +4,7 @@ import android.util.Log
 import ru.vafeen.universityschedule.noui.lesson_additions.Frequency
 import ru.vafeen.universityschedule.ui.components.Settings
 
-fun Frequency.changeFrequencyIfOtherIsDefinedInSettings(settings: Settings): Frequency {
+fun Frequency.changeFrequencyIfDefinedInSettings(settings: Settings): Frequency {
     Log.d(
         "settings",
         "settings.isSelectedFrequencyCorrespondsToTheWeekNumbers = ${settings.isSelectedFrequencyCorrespondsToTheWeekNumbers}"
