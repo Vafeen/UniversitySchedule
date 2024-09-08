@@ -140,7 +140,11 @@ fun MainScreen(
     }
     val cardsWithDateState = rememberLazyListState()
 
-
+    fun changeDateAndFrequency(daysAfterTodayDate: Long) {
+        localDate = viewModel.todayDate.plusDays(daysAfterTodayDate)
+        weekOfYear = localDate.getFrequencyByLocalDate()
+            .changeFrequencyIfDefinedInSettings(settings = viewModel.settings)
+    }
     fun chooseTypeOfDefinitionFrequencyDependsOn(selectedFrequency: Frequency?) {
         viewModel.settings =
             viewModel.settings
@@ -378,35 +382,36 @@ fun MainScreen(
             ) {
                 HorizontalPager(
                     state = pagerState, modifier = Modifier.weight(10f)
-                ) { _ ->
+                ) { page ->
+                    val thisDate = viewModel.todayDate.plusDays(page.toLong())
+                    val thisWeekOfYear = thisDate.getFrequencyByLocalDate()
+                        .changeFrequencyIfDefinedInSettings(settings = viewModel.settings)
                     if (!pagerState.isScrollInProgress) LaunchedEffect(key1 = null) {
                         cardsWithDateState.animateScrollToItem(pagerState.currentPage)
                     }
-                    localDate = viewModel.todayDate.plusDays(pagerState.currentPage.toLong())
-                    weekOfYear = localDate.getFrequencyByLocalDate()
-                        .changeFrequencyIfDefinedInSettings(settings = viewModel.settings)
+                    changeDateAndFrequency(daysAfterTodayDate = pagerState.currentPage.toLong())
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
                         val lessonsOfThisDay = lessons.filter {
-                            it.dayOfWeek == localDate.dayOfWeek &&
-                                    (it.frequency == null || it.frequency == weekOfYear) &&
+                            it.dayOfWeek == thisDate.dayOfWeek &&
+                                    (it.frequency == null || it.frequency == thisWeekOfYear) &&
                                     (it.subGroup == viewModel.settings.subgroup || viewModel.settings.subgroup == null || it.subGroup == null)
                         }
                         val lessonsInOppositeNumAndDenDay = lessons.filter {
-                            it.dayOfWeek == localDate.dayOfWeek &&
-                                    it.frequency == weekOfYear.getOpposite() &&
+                            it.dayOfWeek == thisDate.dayOfWeek &&
+                                    it.frequency == thisWeekOfYear.getOpposite() &&
                                     (it.subGroup == viewModel.settings.subgroup || viewModel.settings.subgroup == null || it.subGroup == null)
                         }
                         if (lessonsOfThisDay.isNotEmpty()) {
                             viewModel.nowIsLesson = false
                             lessonsOfThisDay.forEach { lesson ->
-                                if (lesson.nowIsLesson(localTime) && viewModel.todayDate == localDate) {
+                                if (lesson.nowIsLesson(localTime) && viewModel.todayDate == thisDate) {
                                     viewModel.nowIsLesson = true
                                     lesson.StringForSchedule(colorBack = mainColor)
-                                } else if (viewModel.todayDate == localDate && lessonsOfThisDay.any {
+                                } else if (viewModel.todayDate == thisDate && lessonsOfThisDay.any {
                                         it.startTime > localTime
                                     } && lesson == lessonsOfThisDay.filter {
                                         it.startTime > localTime
