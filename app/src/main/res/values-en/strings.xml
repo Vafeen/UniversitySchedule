@@ -33,4 +33,5 @@
     <string name="update_need">The app is out of date, time to update!</string>
     <string name="view_releases">Updating by click on QR below</string>
     <string name="updating">Updating . . .</string>
+    <string name="auto">Auto</string>
 </resources>
