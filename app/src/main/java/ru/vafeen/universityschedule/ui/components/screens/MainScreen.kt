@@ -184,9 +184,7 @@ fun MainScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(
-                        id = getIconByRequestStatus(networkState = networkState)
-                    ),
+                    imageVector = getIconByRequestStatus(networkState = networkState),
                     contentDescription = "data updating state",
                     tint = ScheduleTheme.colors.oppositeTheme
                 )

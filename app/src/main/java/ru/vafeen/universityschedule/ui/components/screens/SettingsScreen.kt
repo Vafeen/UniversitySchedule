@@ -17,7 +17,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.TableView
+import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -135,9 +141,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(
-                            id = getIconByRequestStatus(networkState = networkState)
-                        ),
+                        imageVector = getIconByRequestStatus(networkState = networkState),
                         contentDescription = "data updating state",
                         tint = ScheduleTheme.colors.oppositeTheme
                     )
@@ -238,7 +242,7 @@ fun SettingsScreen(
                                 text = stringResource(R.string.table),
                             )
                             Icon(
-                                painter = painterResource(id = R.drawable.table),
+                                imageVector = Icons.Outlined.TableView,
                                 contentDescription = "edit link",
                                 tint = ScheduleTheme.colors.oppositeTheme
                             )
@@ -264,7 +268,7 @@ fun SettingsScreen(
                         )
 
                         Icon(
-                            painter = painterResource(id = R.drawable.palette),
+                            imageVector = Icons.Outlined.Palette,
                             contentDescription = "read license",
                             tint = ScheduleTheme.colors.oppositeTheme
                         )
@@ -293,10 +297,8 @@ fun SettingsScreen(
                                     fontSize = FontSize.small17
                                 )
                                 Icon(
-                                    painter = painterResource(
-                                        id = if (subGroupIsChanging) R.drawable.unfold_less
-                                        else R.drawable.unfold_more
-                                    ),
+                                    imageVector = if (subGroupIsChanging) Icons.Filled.UnfoldLess
+                                    else Icons.Filled.UnfoldMore,
                                     contentDescription = "more",
                                     tint = ScheduleTheme.colors.oppositeTheme
                                 )
@@ -361,7 +363,7 @@ fun SettingsScreen(
                             text = stringResource(R.string.project_community)
                         )
                         Icon(
-                            painter = painterResource(id = R.drawable.group),
+                            imageVector = Icons.Outlined.Group,
                             contentDescription = "read license",
                             tint = ScheduleTheme.colors.oppositeTheme
                         )
@@ -387,7 +389,7 @@ fun SettingsScreen(
                             text = stringResource(R.string.code)
                         )
                         Icon(
-                            painter = painterResource(id = R.drawable.terminal),
+                            imageVector = Icons.Outlined.Terminal,
                             contentDescription = "view code",
                             tint = ScheduleTheme.colors.oppositeTheme
                         )
