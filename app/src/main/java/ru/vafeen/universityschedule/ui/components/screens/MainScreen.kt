@@ -378,7 +378,7 @@ fun MainScreen(
             ) {
                 HorizontalPager(
                     state = pagerState, modifier = Modifier.weight(10f)
-                ) { page ->
+                ) { _ ->
                     if (!pagerState.isScrollInProgress) LaunchedEffect(key1 = null) {
                         cardsWithDateState.animateScrollToItem(pagerState.currentPage)
                     }
