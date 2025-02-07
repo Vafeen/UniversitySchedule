@@ -65,10 +65,8 @@ internal fun NavigationRoot(
     // Показ информации о новой версии, если она еще не была показана
     if (settings.lastDemonstratedVersion < viewModel.versionCode && settings.releaseBody != "") {
         NewVersionInfoBottomSheet(viewModel = viewModel) {
-            if (viewModel.versionCode != settings.lastDemonstratedVersion) {
-                viewModel.saveSettingsToSharedPreferences { settings ->
-                    settings.copy(lastDemonstratedVersion = viewModel.versionCode)
-                }
+            viewModel.saveSettingsToSharedPreferences { settings ->
+                settings.copy(lastDemonstratedVersion = viewModel.versionCode)
             }
         }
     }
