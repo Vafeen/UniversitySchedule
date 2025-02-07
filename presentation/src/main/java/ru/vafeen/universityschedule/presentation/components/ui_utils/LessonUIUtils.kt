@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,7 +70,7 @@ internal fun Lesson.StringForSchedule(
     }.generateID()
 
     val focusManager = LocalFocusManager.current
-
+    val settings by viewModel.settingsFlow.collectAsState()
     var text by remember { mutableStateOf(this.note ?: "") }
     var isFocused by remember { mutableStateOf(false) }
     val suitableColor by remember { mutableStateOf(colorBack.suitableColor()) }
@@ -140,42 +141,37 @@ internal fun Lesson.StringForSchedule(
                         fontSize = FontSize.small17
                     )
                 }
-                Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.End
-                ) {
+                if (settings.notesAboutLesson || settings.notificationsAboutLesson) {
                     Row(
-                        modifier = Modifier
-                            .clickable {
-                                isAdditionalInfoExpanded = !isAdditionalInfoExpanded
-                            },
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        if (idOfReminderBeforeLesson == null || idOfReminderAfterBeginningLesson == null || note?.isNotEmpty() != true) Icon(
-                            painter = painterResource(id = R.drawable.add),
-                            contentDescription = stringResource(R.string.edit_notifications_about_this_lesson),
-                            tint = suitableColor
-                        )
-                        if (note?.isNotEmpty() == true) Icon(
-                            painter = painterResource(id = R.drawable.edit),
-                            contentDescription = stringResource(R.string.note),
-                            tint = suitableColor
-                        )
-                        if (idOfReminderBeforeLesson != null)
-                            Icon(
-                                painter = painterResource(id = R.drawable.message),
-                                contentDescription = stringResource(R.string.reminder_about_lesson_before_time),
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (idOfReminderBeforeLesson == null || idOfReminderAfterBeginningLesson == null || note?.isNotEmpty() != true) Icon(
+                                painter = painterResource(id = R.drawable.add),
+                                contentDescription = stringResource(R.string.edit_notifications_about_this_lesson),
                                 tint = suitableColor
                             )
-                        if (idOfReminderAfterBeginningLesson != null)
-                            Icon(
-                                painter = painterResource(id = R.drawable.notification_about_checking),
-                                contentDescription = stringResource(R.string.reminder_about_lesson_before_time),
+                            if (note?.isNotEmpty() == true) Icon(
+                                painter = painterResource(id = R.drawable.edit),
+                                contentDescription = stringResource(R.string.note),
                                 tint = suitableColor
                             )
+                            if (idOfReminderBeforeLesson != null)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.message),
+                                    contentDescription = stringResource(R.string.reminder_about_lesson_before_time),
+                                    tint = suitableColor
+                                )
+                            if (idOfReminderAfterBeginningLesson != null)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.notification_about_checking),
+                                    contentDescription = stringResource(R.string.reminder_about_lesson_before_time),
+                                    tint = suitableColor
+                                )
+                        }
                     }
                 }
-
             }
 
             name?.let {

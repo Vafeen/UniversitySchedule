@@ -8,7 +8,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
-import java.time.temporal.ChronoField
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 // Список строковых ресурсов для дней недели
 private val daysOfWeek = listOf(
@@ -57,21 +58,37 @@ internal fun LocalDate.getLastSeptemberOfThisAcademicYear(): LocalDate {
     else LocalDate.of(year - 1, Month.SEPTEMBER, 1)
 }
 
+
 /**
- * Функция для определения частоты (Числитель / Знаменатель) по текущей дате.
- * Определяет четность недели и возвращает соответствующую частоту.
- * Если 1 сентября выпало на воскресенье, то частота инвертируется.
+ * Функция для определения частоты (Числитель или Знаменатель) в зависимости от текущей даты и начала учебного года.
  *
- * @return Возвращает частоту для текущей даты.
+ * Алгоритм:
+ * 1. Определяет номер недели текущей даты.
+ * 2. Вычисляет четность этой недели (четная или нечетная).
+ * 3. Если неделя четная, по умолчанию возвращает Frequency.Denominator, иначе - Frequency.Numerator.
+ * 4. Если 1 сентября текущего учебного года выпало на воскресенье, то частота инвертируется.
+ *
+ * @return Возвращает Frequency.Numerator или Frequency.Denominator в зависимости от даты.
  */
 fun LocalDate.getFrequencyByLocalDate(): Frequency {
     val lastSeptember = getLastSeptemberOfThisAcademicYear()
     val resultFrequency =
-        if (get(ChronoField.ALIGNED_WEEK_OF_YEAR) % 2 == 0) Frequency.Denominator
+        if (getNumberOrWeek() % 2 == 0) Frequency.Denominator
         else Frequency.Numerator
     return if (lastSeptember.dayOfWeek == DayOfWeek.SUNDAY)
         resultFrequency.getOpposite()
     else resultFrequency
+}
+
+/**
+ *  Функция для получения номера недели в году.
+ *  Использует настройки локали по умолчанию для определения правил вычисления номера недели.
+ *
+ *  @return Номер недели в году.
+ */
+fun LocalDate.getNumberOrWeek(): Int {
+    val weekFields = WeekFields.of(Locale.getDefault())
+    return get(weekFields.weekOfYear())
 }
 
 /**

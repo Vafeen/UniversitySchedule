@@ -10,7 +10,6 @@ import ru.vafeen.universityschedule.data.database.AppDatabase
 import ru.vafeen.universityschedule.data.database.AppDatabaseMigrationManager
 import ru.vafeen.universityschedule.data.impl.database.LessonRepositoryImpl
 import ru.vafeen.universityschedule.data.impl.database.ReminderRepositoryImpl
-import ru.vafeen.universityschedule.data.impl.network.end_points.DownloadServiceLink
 import ru.vafeen.universityschedule.data.impl.network.end_points.GitHubDataServiceLink
 import ru.vafeen.universityschedule.data.impl.network.repository.ReleaseRepositoryImpl
 import ru.vafeen.universityschedule.data.impl.network.repository.SheetDataRepositoryImpl
@@ -20,7 +19,6 @@ import ru.vafeen.universityschedule.data.impl.notifications.NotificationBuilderI
 import ru.vafeen.universityschedule.data.impl.notifications.NotificationServiceImpl
 import ru.vafeen.universityschedule.data.impl.scheduler.SchedulerAPIMigrationManagerImpl
 import ru.vafeen.universityschedule.data.impl.scheduler.SchedulerImpl
-import ru.vafeen.universityschedule.data.network.service.DownloadService
 import ru.vafeen.universityschedule.data.network.service.GitHubDataService
 import ru.vafeen.universityschedule.data.network.service.GoogleSheetsService
 import ru.vafeen.universityschedule.domain.database.LessonRepository
@@ -64,11 +62,6 @@ internal val networkServiceModuleImpl = module {
             .baseUrl(GitHubDataServiceLink.BASE_LINK)
             .addConverterFactory(GsonConverterFactory.create())
             .build().create(GitHubDataService::class.java)
-    }
-    single<DownloadService> {
-        Retrofit.Builder()
-            .baseUrl(DownloadServiceLink.BASE_LINK)
-            .build().create(DownloadService::class.java)
     }
     single<GoogleSheetsService> {
         Retrofit.Builder()

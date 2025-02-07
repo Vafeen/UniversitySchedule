@@ -1,7 +1,6 @@
 package ru.vafeen.universityschedule.presentation.components.screens
 
 import android.app.Activity
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -60,8 +59,6 @@ import ru.vafeen.universityschedule.presentation.components.ui_utils.CardOfNextL
 import ru.vafeen.universityschedule.presentation.components.ui_utils.StringForSchedule
 import ru.vafeen.universityschedule.presentation.components.ui_utils.TextForThisTheme
 import ru.vafeen.universityschedule.presentation.components.ui_utils.WeekDay
-import ru.vafeen.universityschedule.presentation.components.video.AssetsInfo
-import ru.vafeen.universityschedule.presentation.components.video.GifPlayer
 import ru.vafeen.universityschedule.presentation.components.viewModels.MainScreenViewModel
 import ru.vafeen.universityschedule.presentation.navigation.BottomBarNavigator
 import ru.vafeen.universityschedule.presentation.theme.FontSize
@@ -392,6 +389,8 @@ internal fun MainScreen(bottomBarNavigator: BottomBarNavigator) {
                             )
                         }
                     } else WeekDay(
+                        isCatShowed = settings.weekendCat,
+                        viewModel = viewModel,
                         context = context,
                         modifier = Modifier.let {
                             var modifier =
@@ -422,15 +421,7 @@ internal fun MainScreen(bottomBarNavigator: BottomBarNavigator) {
                     }
                 }
 
-                // Отображение GIF-картинки, если нет пар и выходной день.
-                if (lessonsOfThisDay.isEmpty() && settings.weekendCat)
-                    GifPlayer(
-                        size = 150.dp,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .clickable { viewModel.meow() },
-                        imageUri = Uri.parse(AssetsInfo.DANCING_CAT)
-                    )
+
             }
         }
     }

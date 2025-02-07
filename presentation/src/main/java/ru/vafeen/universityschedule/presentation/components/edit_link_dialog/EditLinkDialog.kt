@@ -1,4 +1,4 @@
-package ru.vafeen.universityschedule.presentation.components.ui_utils
+package ru.vafeen.universityschedule.presentation.components.edit_link_dialog
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -17,6 +17,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,9 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import org.koin.compose.koinInject
-import ru.vafeen.universityschedule.domain.utils.getSettingsOrCreateIfNull
-import ru.vafeen.universityschedule.domain.utils.save
+import org.koin.androidx.compose.koinViewModel
+import ru.vafeen.universityschedule.presentation.components.ui_utils.TextForThisTheme
 import ru.vafeen.universityschedule.presentation.theme.FontSize
 import ru.vafeen.universityschedule.presentation.theme.Theme
 import ru.vafeen.universityschedule.presentation.utils.Link
@@ -43,8 +43,9 @@ internal fun EditLinkDialog(
     context: Context,
     onDismissRequest: () -> Unit,
 ) {
-    val sharedPreferences = koinInject<SharedPreferences>()
-    var settings by remember { mutableStateOf(sharedPreferences.getSettingsOrCreateIfNull()) }
+    val viewModel = koinViewModel<EditLinkDialogViewModel>()
+
+    val settings by viewModel.settings.collectAsState()
     val iconsSize = 30.dp
     Dialog(
         onDismissRequest = { onDismissRequest() }, properties = DialogProperties()
@@ -109,8 +110,9 @@ internal fun EditLinkDialog(
                         }
                         IconButton(
                             onClick = {
-                                settings = settings.copy(link = null)
-                                sharedPreferences.save(settings)
+                                viewModel.saveSettingsToSharedPreferences { s ->
+                                    s.copy(link = null)
+                                }
                                 onDismissRequest()
                             }
                         ) {
@@ -126,11 +128,12 @@ internal fun EditLinkDialog(
                         context.pasteText()?.let {
                             val contains = it.contains("docs.google.com/spreadsheets/")
                             if (contains) {
-                                settings = settings.copy(
-                                    link = if (!it.contains(Link.PROTOCOL))
-                                        "${Link.PROTOCOL}$it" else it
-                                )
-                                sharedPreferences.save(settings)
+                                viewModel.saveSettingsToSharedPreferences { s ->
+                                    s.copy(
+                                        link = if (!it.contains(Link.PROTOCOL))
+                                            "${Link.PROTOCOL}$it" else it
+                                    )
+                                }
                                 onDismissRequest()
                             } else
                                 Toast.makeText(

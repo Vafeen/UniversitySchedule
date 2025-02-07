@@ -1,9 +1,7 @@
 package ru.vafeen.universityschedule.data.impl.network.service
 
 import android.content.Context
-import android.vafeen.direct_refresher.provideDownloader
-import android.vafeen.direct_refresher.provideInstaller
-import android.vafeen.direct_refresher.provideRefresher
+import android.vafeen.direct_refresher.DirectRefresher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.map
 import ru.vafeen.universityschedule.data.converters.DownloadStatusConverter
@@ -17,13 +15,13 @@ internal class RefresherImpl(
 ) :
     Refresher {
     private val libRefresher: LibRefresher =
-        provideRefresher(
+        DirectRefresher.provideRefresher(
             context = context,
-            downloader = provideDownloader(
+            downloader = DirectRefresher.provideDownloader(
                 context = context,
                 baseUrl = DownloadServiceLink.BASE_LINK
             ),
-            installer = provideInstaller(context = context)
+            installer = DirectRefresher.provideInstaller(context = context)
         )
     override val progressFlow =
         libRefresher.progressFlow.map { downloadStatusConverter.convertAB(it) }

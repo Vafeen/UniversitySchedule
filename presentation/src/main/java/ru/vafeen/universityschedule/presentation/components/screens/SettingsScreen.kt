@@ -35,9 +35,9 @@ import androidx.compose.ui.unit.dp
 import org.koin.androidx.compose.koinViewModel
 import ru.vafeen.universityschedule.domain.utils.getMainColorForThisTheme
 import ru.vafeen.universityschedule.domain.utils.getVersionName
+import ru.vafeen.universityschedule.presentation.components.edit_link_dialog.EditLinkDialog
 import ru.vafeen.universityschedule.presentation.components.ui_utils.CardOfSettings
 import ru.vafeen.universityschedule.presentation.components.ui_utils.ColorPickerDialog
-import ru.vafeen.universityschedule.presentation.components.ui_utils.EditLinkDialog
 import ru.vafeen.universityschedule.presentation.components.ui_utils.FeatureOfSettings
 import ru.vafeen.universityschedule.presentation.components.ui_utils.TextForThisTheme
 import ru.vafeen.universityschedule.presentation.components.video.AssetsInfo
