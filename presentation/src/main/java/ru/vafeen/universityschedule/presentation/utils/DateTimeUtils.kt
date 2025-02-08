@@ -45,19 +45,6 @@ internal fun LocalDate.getDateStringWithWeekOfDay(context: Context): String =
     "${context.getString(daysOfWeek[dayOfWeek.value - 1])}, ${dayOfMonth}." + if (month.value < 10) "0${month.value}"
     else month.value
 
-/**
- * Функция для получения даты последнего сентября текущего учебного года.
- * Если текущая дата позже 1 сентября, то возвращается 1 сентября этого года.
- * Если текущая дата до 1 сентября, то возвращается 1 сентября предыдущего года.
- *
- * @return Дата 1 сентября текущего учебного года.
- */
-internal fun LocalDate.getLastSeptemberOfThisAcademicYear(): LocalDate {
-    return if (this >= LocalDate.of(year, Month.SEPTEMBER, 1))
-        LocalDate.of(year, Month.SEPTEMBER, 1)
-    else LocalDate.of(year - 1, Month.SEPTEMBER, 1)
-}
-
 
 /**
  * Функция для определения частоты (Числитель или Знаменатель) в зависимости от текущей даты и начала учебного года.
@@ -70,15 +57,9 @@ internal fun LocalDate.getLastSeptemberOfThisAcademicYear(): LocalDate {
  *
  * @return Возвращает Frequency.Numerator или Frequency.Denominator в зависимости от даты.
  */
-fun LocalDate.getFrequencyByLocalDate(): Frequency {
-    val lastSeptember = getLastSeptemberOfThisAcademicYear()
-    val resultFrequency =
-        if (getNumberOrWeek() % 2 == 0) Frequency.Denominator
-        else Frequency.Numerator
-    return if (lastSeptember.dayOfWeek == DayOfWeek.SUNDAY)
-        resultFrequency.getOpposite()
-    else resultFrequency
-}
+fun LocalDate.getFrequencyByLocalDate(): Frequency =
+    if (getNumberOrWeek() % 2 == 0) Frequency.Denominator
+    else Frequency.Numerator
 
 /**
  *  Функция для получения номера недели в году.
@@ -86,10 +67,7 @@ fun LocalDate.getFrequencyByLocalDate(): Frequency {
  *
  *  @return Номер недели в году.
  */
-fun LocalDate.getNumberOrWeek(): Int {
-    val weekFields = WeekFields.of(Locale.getDefault())
-    return get(weekFields.weekOfYear())
-}
+fun LocalDate.getNumberOrWeek(): Int = get(WeekFields.of(Locale.getDefault()).weekOfYear())
 
 /**
  * Функция для преобразования времени (LocalTime) в строку формата "часы:минуты".

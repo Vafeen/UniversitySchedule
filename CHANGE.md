@@ -1,3 +1,3 @@
 What's fix:
 
-- Bug with updating
+- Manual frequency changing
