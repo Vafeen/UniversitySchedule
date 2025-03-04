@@ -58,7 +58,6 @@ internal class MainScreenViewModel(
     private val settingsManager: SettingsManager
 ) : BaseStateViewModel<MainScreenState, MainScreenEvent>() {
     override val _state = MutableStateFlow(MainScreenState())
-
     override val state: StateFlow<MainScreenState> = _state
 
     init {
@@ -148,7 +147,6 @@ internal class MainScreenViewModel(
             }
         }
     }
-
 
 
     /**

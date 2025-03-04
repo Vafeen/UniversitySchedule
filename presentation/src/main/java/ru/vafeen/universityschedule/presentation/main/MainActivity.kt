@@ -1,4 +1,4 @@
-package ru.vafeen.universityschedule.presentation
+package ru.vafeen.universityschedule.presentation.main
 
 import android.os.Build
 import android.os.Bundle
@@ -9,7 +9,6 @@ import androidx.annotation.RequiresApi
 import androidx.navigation.compose.rememberNavController
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.vafeen.universityschedule.presentation.components.permissions.RequestNotificationPermission
-import ru.vafeen.universityschedule.presentation.components.viewModels.MainActivityViewModel
 import ru.vafeen.universityschedule.presentation.navigation.NavigationRoot
 import ru.vafeen.universityschedule.presentation.theme.MainTheme
 

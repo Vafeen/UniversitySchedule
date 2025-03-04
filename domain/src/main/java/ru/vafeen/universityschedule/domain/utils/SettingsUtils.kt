@@ -14,5 +14,5 @@ import ru.vafeen.universityschedule.domain.models.Settings
  *               если false, возвращается цвет для светлой темы.
  * @return Основной цвет [Color] для текущей темы или null, если цвета не заданы.
  */
-fun Settings.getMainColorForThisTheme(isDark: Boolean): Color? =
-    if (isDark) darkThemeColor else lightThemeColor
+fun Settings.getMainColorForThisThemeOrDefault(isDark: Boolean, defaultColor: Color): Color =
+    (if (isDark) darkThemeColor else lightThemeColor) ?: defaultColor

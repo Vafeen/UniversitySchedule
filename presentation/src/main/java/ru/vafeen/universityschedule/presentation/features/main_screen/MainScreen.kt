@@ -54,7 +54,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import ru.vafeen.universityschedule.domain.models.model_additions.Frequency
-import ru.vafeen.universityschedule.domain.utils.getMainColorForThisTheme
+import ru.vafeen.universityschedule.domain.utils.getMainColorForThisThemeOrDefault
 import ru.vafeen.universityschedule.presentation.components.ui_utils.CardOfNextLesson
 import ru.vafeen.universityschedule.presentation.components.ui_utils.StringForSchedule
 import ru.vafeen.universityschedule.presentation.components.ui_utils.TextForThisTheme
@@ -93,9 +93,9 @@ internal fun MainScreen(bottomBarNavigator: BottomBarNavigator) {
     // Определение текущей темы (темная или светлая).
     val dark = isSystemInDarkTheme()
     val mainColor by remember {
-        mutableStateOf(
-            state.settings.getMainColorForThisTheme(isDark = dark) ?: defaultColor
-        )
+        derivedStateOf {
+            state.settings.getMainColorForThisThemeOrDefault(dark, defaultColor)
+        }
     }
 
     val cor = rememberCoroutineScope()

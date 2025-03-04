@@ -3,6 +3,7 @@ package ru.vafeen.universityschedule.presentation
 import android.content.Context
 import android.content.Intent
 import ru.vafeen.universityschedule.domain.MainActivityIntentProvider
+import ru.vafeen.universityschedule.presentation.main.MainActivity
 
 /**
  * Реализация интерфейса [MainActivityIntentProvider], предоставляющая Intent для запуска MainActivity.

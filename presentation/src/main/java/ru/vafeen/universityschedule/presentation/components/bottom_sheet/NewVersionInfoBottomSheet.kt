@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.vafeen.universityschedule.presentation.components.ui_utils.TextForThisTheme
-import ru.vafeen.universityschedule.presentation.components.viewModels.MainActivityViewModel
+import ru.vafeen.universityschedule.presentation.main.MainActivityViewModel
 import ru.vafeen.universityschedule.presentation.theme.FontSize
 import ru.vafeen.universityschedule.presentation.theme.Theme
 
@@ -34,24 +34,22 @@ internal fun NewVersionInfoBottomSheet(
     onDismissRequest: () -> Unit,
 ) {
     // Создание состояния модального нижнего окна.
-    val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    // Подписка на настройки из ViewModel.
-    val settings by viewModel.settings.collectAsState()
-
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val state by viewModel.state.collectAsState()
     // Отображение модального нижнего окна.
     ModalBottomSheet(
-        sheetState = state,
+        sheetState = sheetState,
         onDismissRequest = onDismissRequest,
         containerColor = Theme.colors.buttonColor,
     ) {
-        Column(modifier = Modifier
-            .verticalScroll(rememberScrollState()) // Добавление прокрутки для содержимого.
-            .padding(15.dp) // Установка отступов.
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState()) // Добавление прокрутки для содержимого.
+                .padding(15.dp) // Установка отступов.
         ) {
             TextForThisTheme(
                 modifier = Modifier.fillMaxWidth(),
-                text = settings.releaseBody, // Текст информации о новой версии.
+                text = state.settings.releaseBody, // Текст информации о новой версии.
                 fontSize = FontSize.big22 // Размер шрифта для текста.
             )
         }

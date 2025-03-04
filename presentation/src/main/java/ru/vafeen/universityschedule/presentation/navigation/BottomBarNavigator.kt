@@ -16,12 +16,6 @@ internal interface BottomBarNavigator {
     var navController: NavHostController?
 
     /**
-     * Поток состояния, отслеживающий текущий экран приложения.
-     * Используется для отслеживания активного экрана в приложении.
-     */
-    val currentScreen: StateFlow<Screen>
-
-    /**
      * Метод для обработки действия "Назад". Переходит на предыдущий экран в стеке навигации.
      */
     fun back()

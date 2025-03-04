@@ -33,7 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.koin.androidx.compose.koinViewModel
-import ru.vafeen.universityschedule.domain.utils.getMainColorForThisTheme
+import ru.vafeen.universityschedule.domain.utils.getMainColorForThisThemeOrDefault
 import ru.vafeen.universityschedule.domain.utils.getVersionName
 import ru.vafeen.universityschedule.presentation.components.edit_link_dialog.EditLinkDialog
 import ru.vafeen.universityschedule.presentation.components.ui_utils.CardOfSettings
@@ -111,8 +111,7 @@ internal fun SettingsScreen(bottomBarNavigator: BottomBarNavigator) {
         if (colorIsEditable) {
             ColorPickerDialog(
                 context = context,
-                firstColor = state.settings.getMainColorForThisTheme(isDark = dark)
-                    ?: Theme.colors.mainColor,
+                firstColor = state.settings.getMainColorForThisThemeOrDefault(isDark = dark, Theme.colors.mainColor),
                 onDismissRequest = { colorIsEditable = false }
             ) { color ->
                 viewModel.sendEvent(SettingsScreenEvent.SaveSettingsEvent {

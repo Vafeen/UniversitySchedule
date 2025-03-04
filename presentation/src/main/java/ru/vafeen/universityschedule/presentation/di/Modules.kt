@@ -7,7 +7,7 @@ import org.koin.dsl.module
 import ru.vafeen.universityschedule.domain.MainActivityIntentProvider
 import ru.vafeen.universityschedule.presentation.MainActivityIntentProviderImpl
 import ru.vafeen.universityschedule.presentation.components.edit_link_dialog.EditLinkDialogViewModel
-import ru.vafeen.universityschedule.presentation.components.viewModels.MainActivityViewModel
+import ru.vafeen.universityschedule.presentation.main.MainActivityViewModel
 import ru.vafeen.universityschedule.presentation.features.main_screen.MainScreenViewModel
 import ru.vafeen.universityschedule.presentation.features.settings_screen.SettingsScreenViewModel
 

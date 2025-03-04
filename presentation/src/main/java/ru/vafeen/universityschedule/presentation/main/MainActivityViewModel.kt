@@ -1,30 +1,26 @@
-package ru.vafeen.universityschedule.presentation.components.viewModels
+package ru.vafeen.universityschedule.presentation.main
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import ru.vafeen.universityschedule.domain.models.Release
-import ru.vafeen.universityschedule.domain.models.Settings
 import ru.vafeen.universityschedule.domain.network.result.DownloadStatus
 import ru.vafeen.universityschedule.domain.network.service.Refresher
 import ru.vafeen.universityschedule.domain.network.service.SettingsManager
 import ru.vafeen.universityschedule.domain.scheduler.SchedulerAPIMigrationManager
 import ru.vafeen.universityschedule.domain.usecase.network.GetLatestReleaseUseCase
-import ru.vafeen.universityschedule.domain.usecase.scheduler.RebootingRemindersUseCase
 import ru.vafeen.universityschedule.domain.utils.getVersionCode
 import ru.vafeen.universityschedule.domain.utils.getVersionName
+import ru.vafeen.universityschedule.domain.utils.launchIO
+import ru.vafeen.universityschedule.presentation.components.viewModels.BaseStateViewModel
 import ru.vafeen.universityschedule.presentation.navigation.BottomBarNavigator
 import ru.vafeen.universityschedule.presentation.navigation.Screen
 import ru.vafeen.universityschedule.presentation.utils.Link
@@ -44,93 +40,96 @@ import kotlin.system.exitProcess
  */
 internal class MainActivityViewModel(
     private val getLatestReleaseUseCase: GetLatestReleaseUseCase,
-    private val rebootingRemindersUseCase: RebootingRemindersUseCase,
     context: Context,
     private val schedulerAPIMigrationManager: SchedulerAPIMigrationManager,
     private val settingsManager: SettingsManager,
     private val refresher: Refresher,
-) : ViewModel(), BottomBarNavigator {
-    var release: Release? = null
-        private set
+) : BaseStateViewModel<MainActivityState, MainActivityEvent>(), BottomBarNavigator {
+    override val _state: MutableStateFlow<MainActivityState> =
+        MutableStateFlow(
+            MainActivityState(
+                versionCode = context.getVersionCode(),
+                settings = settingsManager.settingsFlow.value
+            )
+        )
+    override val state: StateFlow<MainActivityState> = _state
 
-    /**
-     * Получает версию приложения.
-     */
-    val versionCode = context.getVersionCode()
-    val versionName = context.getVersionName()
-
-    suspend fun checkUpdates(): Release? {
-        val localRelease = getLatestReleaseUseCase.invoke()
-        return if (localRelease != null && versionName != null &&
-            localRelease.tagName.substringAfter("v") != versionName
-        ) {
-            saveSettingsToSharedPreferences {
-                it.copy(releaseBody = localRelease.body)
+    override fun sendEvent(event: MainActivityEvent) {
+        when (event) {
+            MainActivityEvent.CheckUpdates -> {
+                viewModelScope.launchIO {
+                    checkUpdates()
+                }
             }
-            release = localRelease
-            release
-        } else null
+
+            MainActivityEvent.UpdateApp -> {
+                update()
+            }
+
+            MainActivityEvent.ClearReleaseData -> {
+                updateState { it.copy(release = null) }
+            }
+
+            is MainActivityEvent.SaveSettingsEvent -> {
+                settingsManager.save(event.saving)
+            }
+        }
     }
 
-    fun update() {
-        release?.let {
+
+    private val versionName = context.getVersionName()
+
+    private suspend fun checkUpdates() {
+        val localRelease = getLatestReleaseUseCase.invoke()
+        updateState { s ->
+            s.copy(release = if (localRelease != null && versionName != null &&
+                localRelease.tagName.substringAfter("v") != versionName
+            ) {
+                settingsManager.save {
+                    it.copy(releaseBody = localRelease.body)
+                }
+                localRelease
+            } else null)
+        }
+
+    }
+
+    private fun update() {
+        state.value.release?.let {
             viewModelScope.launch(Dispatchers.IO) {
                 refresher.refresh(viewModelScope, it.apkUrl, RefresherInfo.APK_FILE_NAME)
             }
         }
     }
 
-    /**
-     * Поток состояния, который отслеживает процесс обновления.
-     */
-    val isUpdateInProcessFlow: SharedFlow<Boolean> = refresher.progressFlow.map {
-        it !is DownloadStatus.Error && it !is DownloadStatus.Success
-    }.shareIn(viewModelScope, SharingStarted.Lazily)
-
-    /**
-     * Поток состояния, который отслеживает процент выполнения обновления.
-     */
-    val percentageFlow: SharedFlow<Float> = refresher.progressFlow.map {
-        when (it) {
-            is DownloadStatus.InProgress -> it.percentage
-            DownloadStatus.Success -> 100f
-            else -> 0f
-        }
-    }.shareIn(viewModelScope, SharingStarted.Lazily)
-
-    /**
-     * Поток состояния, содержащий текущие настройки приложения.
-     */
-    val settings = settingsManager.settingsFlow
-
-    /**
-     * Функция для сохранения настроек в SharedPreferences.
-     * Принимает функцию, изменяющую текущие настройки.
-     *
-     * @param saving Функция, изменяющая настройки.
-     */
-    fun saveSettingsToSharedPreferences(saving: (Settings) -> Settings) {
-        settingsManager.save(saving)
-    }
-
-    /**
-     * Запускает процесс миграции данных с AlarmManager на WorkManager, если миграция еще не была выполнена.
-     * Обновляет настройки после успешной миграции.
-     */
-    suspend fun callSchedulerAPIMigration() {
-        if (!settings.value.isMigrationFromAlarmManagerToWorkManagerSuccessful) {
-            schedulerAPIMigrationManager.migrate()
-            saveSettingsToSharedPreferences {
-                it.copy(isMigrationFromAlarmManagerToWorkManagerSuccessful = true)
+    init {
+        viewModelScope.launchIO {
+            refresher.progressFlow.map {
+                it !is DownloadStatus.Error && it !is DownloadStatus.Success
+            }.collect {
+                updateState { s -> s.copy(isUpdateInProcess = it) }
             }
         }
-        if (!settings.value.isRemindersRebootedForVersion6_1_15) {
-            rebootingRemindersUseCase.invoke()
-            saveSettingsToSharedPreferences {
-                it.copy(isRemindersRebootedForVersion6_1_15 = true)
+        viewModelScope.launchIO {
+            refresher.progressFlow.map {
+                when (it) {
+                    is DownloadStatus.InProgress -> it.percentage
+                    DownloadStatus.Success -> 100f
+                    else -> 0f
+                }
+            }.collect {
+                updateState { s -> s.copy(percentage = it) }
+            }
+        }
+        viewModelScope.launchIO {
+            settingsManager.settingsFlow.collect { s ->
+                updateState {
+                    it.copy(settings = s)
+                }
             }
         }
     }
+
 
     /**
      * Регистрирует обработчик необработанных исключений для приложения.
@@ -144,7 +143,11 @@ internal class MainActivityViewModel(
                 label = "Error",
                 text = "Contact us about this problem: ${Link.EMAIL}\n\n Exception in ${thread.name} thread\n${throwable.stackTraceToString()}"
             )
-            Log.e("GeneralException", "Exception in thread ${thread.name}", throwable)
+            Log.e(
+                "GeneralException",
+                "Exception in thread ${thread.name}",
+                throwable
+            )
             exitProcess(0)
         }
     }
@@ -155,20 +158,10 @@ internal class MainActivityViewModel(
     }
 
     /**
-     * Экран, который должен отображаться при запуске приложения.
-     */
-    val startScreen = Screen.Main
-
-    /**
      * Контроллер навигации, управляющий переходами между экранами.
      */
     override var navController: NavHostController? = null
 
-    /**
-     * Поток состояния, отслеживающий текущий экран приложения.
-     */
-    private val _currentScreen: MutableStateFlow<Screen> = MutableStateFlow(startScreen)
-    override val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
 
     /**
      * Эмитирует текущий экран на основе стека навигации.
@@ -179,8 +172,13 @@ internal class MainActivityViewModel(
             navController?.currentBackStackEntryFlow?.collect { backStackEntry ->
                 val destination = backStackEntry.destination
                 when {
-                    destination.hasRoute(Screen.Main::class) -> _currentScreen.emit(Screen.Main)
-                    destination.hasRoute(Screen.Settings::class) -> _currentScreen.emit(Screen.Settings)
+                    destination.hasRoute(Screen.Main::class) -> updateState {
+                        it.copy(currentScreen = Screen.Main)
+                    }
+
+                    destination.hasRoute(Screen.Settings::class) -> updateState {
+                        it.copy(currentScreen = Screen.Settings)
+                    }
                 }
             }
         }
